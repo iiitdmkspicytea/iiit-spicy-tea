@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Posts Collection Rules
+    match /posts/{postId} {
+      // Anyone authenticated anonymously can read posts
+      allow read: if isAuthenticated();
+
+      // Creating posts: strict schema validation, anonymous content only.
+      // NOTE: no user identifiers (UIDs, emails, IPs) may be stored.
+      allow create: if isAuthenticated()
+        && request.resource.data.keys().hasOnly(
+             ['title', 'content', 'category', 'timestamp',
+              'upvotes', 'downvotes', 'score', 'likes', 'commentsCount'])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 120
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 1000
+        && request.resource.data.category in ['academics', 'campus', 'confessions']
+        && request.resource.data.timestamp == request.time
+        && request.resource.data.upvotes == 1
+        && request.resource.data.downvotes == 0
+        && request.resource.data.score == 1
+        && request.resource.data.likes == 1
+        && request.resource.data.commentsCount == 0;
+
+      // Reactions only: only counter fields may change after creation.
+      // Nobody can rewrite, edit, or vandalize anyone's post content.
+      allow update: if isAuthenticated()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['upvotes', 'downvotes', 'score', 'likes', 'commentsCount'])
+        && request.resource.data.upvotes is number
+        && request.resource.data.downvotes is number
+        && request.resource.data.score is number
+        && request.resource.data.likes is number
+        && request.resource.data.commentsCount is number;
+
+      // Deleting is disallowed
+      allow delete: if false;
+
+      // Replies Subcollection Rules
+      match /replies/{replyId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated()
+          && request.resource.data.keys().hasOnly(['content', 'timestamp', 'likes'])
+          && request.resource.data.content is string
+          && request.resource.data.content.size() > 0
+          && request.resource.data.content.size() <= 400
+          && request.resource.data.timestamp == request.time
+          && request.resource.data.likes == 0;
+        allow update: if isAuthenticated()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
+          && request.resource.data.likes is number;
+        allow delete: if false;
+      }
+    }
+  }
+}

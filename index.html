@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IIIT Spicy Tea • Kurnool</title>
+    <meta name="description" content="Anonymous, privacy-first student discussion board for IIIT Kurnool. No accounts, no identifiers, no logs.">
+
+    <!-- Privacy: prevent indexing, caching and referrer leakage -->
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%B5%3C/text%3E%3C/svg%3E">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <!-- Compiled Tailwind (production build) + App Styles -->
+    <link rel="stylesheet" href="css/tailwind.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-indigo-500/30">
+
+    <!-- Anti-Peep Privacy Shield Overlay (feature: toggle with Alt + L) -->
+    <div id="libraryShieldOverlay" class="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-2xl flex flex-col items-center justify-center p-6 transition-all duration-300 hidden">
+        <div class="glass-card max-w-md w-full p-8 text-center border border-indigo-500/30 rounded-2xl shadow-2xl space-y-4">
+            <div class="w-16 h-16 mx-auto rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-2">
+                <i data-lucide="shield-alert" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white tracking-tight">Privacy Shield Active</h2>
+            <p class="text-slate-400 text-sm leading-relaxed">Screen blurred for privacy in public spaces. Click anywhere or press <kbd class="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-xs font-mono text-indigo-300">Alt + L</kbd> to unlock.</p>
+            <button id="unlockShieldBtn" class="mt-4 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/25 cursor-pointer">
+                Unlock Screen
+            </button>
+        </div>
+    </div>
+
+    <!-- DevTools / Anti-Inspect Warning Banner (Hidden by default, triggered on inspect attempt) -->
+    <div id="inspectWarningModal" class="fixed inset-0 z-[110] bg-black/95 flex flex-col items-center justify-center p-6 text-center hidden">
+        <div class="max-w-md space-y-4">
+            <i data-lucide="lock" class="w-12 h-12 mx-auto text-rose-500"></i>
+            <h3 class="text-xl font-bold text-white">Developer Tools Restricted</h3>
+            <p class="text-slate-400 text-sm">To protect privacy and board integrity, inspect mode is disabled on this community node.</p>
+            <button onclick="document.getElementById('inspectWarningModal').classList.add('hidden')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm transition-colors cursor-pointer">
+                Return to Board
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Application Header -->
+    <header class="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-rose-500/20">
+                    <i data-lucide="flame" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-lg font-bold text-white tracking-tight whitespace-nowrap">IIIT Spicy Tea</h1>
+                        <span class="px-2 py-0.5 text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-full">Kurnool</span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-medium hidden sm:block">Anonymous Student Board</p>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex items-center gap-2">
+                <button id="toggleShieldBtn" title="Toggle Privacy Shield (Alt + L)" class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-indigo-400 hover:border-slate-700 transition-colors cursor-pointer">
+                    <i data-lucide="shield" class="w-4 h-4"></i>
+                </button>
+                <div class="h-4 w-px bg-slate-800 hidden sm:block"></div>
+                <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Protected Node
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+
+        <!-- Category Navigation Bar -->
+        <nav id="categoryNav" class="flex items-center gap-2 overflow-x-auto pb-4 mb-6 no-scrollbar">
+            <button data-category="all" class="category-btn active px-3.5 py-1.5 rounded-xl text-xs font-medium bg-indigo-600 text-white border border-indigo-500/30 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5">
+                <i data-lucide="flame" class="w-3.5 h-3.5"></i> All Tea
+            </button>
+            <button data-category="academics" class="category-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5">
+                <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i> Academics
+            </button>
+            <button data-category="campus" class="category-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5">
+                <i data-lucide="building-2" class="w-3.5 h-3.5"></i> Campus
+            </button>
+            <button data-category="confessions" class="category-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5">
+                <i data-lucide="venetian-mask" class="w-3.5 h-3.5"></i> Confessions
+            </button>
+        </nav>
+
+        <!-- Post Creation Card -->
+        <section class="glass-card mb-8 p-5 sm:p-6 rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl">
+            <form id="createPostForm" class="space-y-4" autocomplete="off">
+                <div>
+                    <input type="text" id="postTitle" required placeholder="What's brewing on campus?" maxlength="120" autocomplete="off"
+                        class="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
+                </div>
+                <div>
+                    <textarea id="postContent" required rows="3" placeholder="Share tea, course feedback, or questions anonymously..." maxlength="1000"
+                        class="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-none"></textarea>
+                </div>
+                <div class="flex items-center justify-between pt-1">
+                    <div class="flex items-center gap-3">
+                        <select id="postCategory" class="bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                            <option value="academics">Academics</option>
+                            <option value="campus">Campus</option>
+                            <option value="confessions">Confessions</option>
+                        </select>
+                        <span class="hidden sm:inline text-xs text-slate-500 font-mono">Zero Logs • Pure Anonymous</span>
+                    </div>
+                    <button type="submit" id="submitPostBtn" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl text-sm transition-all duration-200 shadow-md shadow-indigo-600/20 flex items-center gap-2 cursor-pointer">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        Spill Tea
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Feed Filter Header -->
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider font-mono">Feed</h2>
+            <div class="flex items-center gap-2">
+                <button id="sortHot" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-indigo-400 border border-slate-700 transition-all cursor-pointer">Hot</button>
+                <button id="sortNew" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 text-slate-400 hover:text-slate-200 border border-transparent transition-all cursor-pointer">Newest</button>
+                <button id="sortTop" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 text-slate-400 hover:text-slate-200 border border-transparent transition-all cursor-pointer">Top Voted</button>
+            </div>
+        </div>
+
+        <!-- Post Feed Container -->
+        <div id="postsContainer" class="space-y-4">
+            <!-- Dynamic posts will be rendered here -->
+            <div class="text-center py-12 text-slate-500">
+                <i data-lucide="loader-circle" class="w-8 h-8 mx-auto animate-spin mb-3 text-indigo-500"></i>
+                <p class="text-sm">Connecting to Kurnool encrypted relay...</p>
+            </div>
+        </div>
+
+        <!-- Footer Privacy Note -->
+        <footer class="mt-12 pt-6 border-t border-slate-800/60 text-center">
+            <p class="text-[11px] font-mono text-slate-600">No accounts • No identifiers stored • Reactions never leave your browser</p>
+        </footer>
+
+    </main>
+
+    <!-- App Security Guard -->
+    <script src="js/security-guard.js"></script>
+
+    <!-- Firebase Modular SDK -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/app.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      });
+    </script>
+</body>
+</html>
